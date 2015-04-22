@@ -1,32 +1,75 @@
-TODO
+# Welcome
 
-```
-[vagrant@localhost ~]$ cat oradiag_vagrant/diag/clients/user_vagrant/host_61728193_80/trace/sqlnet.log
-Thu Apr 16 20:59:58 2015
-Create Relation ADR_CONTROL
-Create Relation ADR_INVALIDATION
-Create Relation INC_METER_IMPT_DEF
-Create Relation INC_METER_PK_IMPTS
-Directory does not exist for read/write [/u01/app/oracle/product/11.2.0/xe/log] [/u01/app/oracle/product/11.2.0/xe/log/diag/clients]
-```
+It's worth having a Centos based (cuz we are) Oracle database (cuz we
+are) virtual machine that developers can use for development.
 
----
-TODO
-Grab the 11g zip'ed RPM from 
+This is that.
+
+# Getting started
+
+- Clone the repo.
+
+- Grab the 11g zip'ed RPM from
 [the Oracle site](http://www.oracle.com/technetwork/products/express-edition/downloads/index.html)
-after accepting the license terms.  Copy it into the oracle directory.
+after accepting the license terms.  Copy it into the oracle directory within this project.
 
+- Create your standard users (if there's some consensus, we could
+  automate the *standard* standard users.
 
----
+    ```
+    sqlplus system/manager@vagrant
+    
+    SQL> create user scott identified by tiger;
+    
+    User created.
+    
+    SQL> grant all privileges to scott;
+    
+    Grant succeeded.
+    
+    sqitch rebase  db:oracle://scott:tiger@/vagrant
+    ```
 
-sqlplus system/manager@vagrant
+# TODO
 
-SQL> create user scott identified by tiger;
+- It seems that there's a log directory that Oracle would like to use.
+  Perhaps we should create it (or not, if there's a downside...):
 
-User created.
+    ```
+    [vagrant@localhost ~]$ cat oradiag_vagrant/diag/clients/user_vagrant/host_61728193_80/trace/sqlnet.log
+    Thu Apr 16 20:59:58 2015
+    Create Relation ADR_CONTROL
+    Create Relation ADR_INVALIDATION
+    Create Relation INC_METER_IMPT_DEF
+    Create Relation INC_METER_PK_IMPTS
+    Directory does not exist for read/write [/u01/app/oracle/product/11.2.0/xe/log] [/u01/app/oracle/product/11.2.0/xe/log/diag/clients]
+    ```
 
-SQL> grant all privileges to scott;
+- Fix the firewall.
 
-Grant succeeded.
+  The original version of this project dropped the firewall entirely
+  but didn't save the changes.  This meant that Oracle worked until
+  the box was shutdown and restarted, at which point the firewall
+  blocked port 1521 and sadness ensued.
 
-sqitch rebase  db:oracle://scott:tiger@/vagrant
+  I've changed it so that when it provisions instead of dropping the
+  firewall it opens port 1521 and then saves the changes.  That way
+  things work on reboot.
+
+  I think it's worth keeping the firewall in place, that way one
+  *knows* what ports one is using.
+
+  My quick hack has an aesthetic problem, each time you reprovision
+  the machine, it duplicates the port 1521 rule.
+
+  Better would be to use one of the
+  [ansible ferm](https://www.google.com/search?q=ansible+ferm&oq=ansible+ferm)
+  roles or other
+  [ansible iptables](https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=ansible%20iptables)
+  packages to mange the table properly.
+
+- Better Oracle setup.  The Oracle setup is pretty bare bones.  There
+  are various Vagrant projects that are fancier (but that don't use
+  Centos) and there are various ansible roles that one could leverage.
+  Someone should look into this....
+
