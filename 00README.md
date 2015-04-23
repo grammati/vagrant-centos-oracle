@@ -13,6 +13,8 @@ This is that.
 [the Oracle site](http://www.oracle.com/technetwork/products/express-edition/downloads/index.html)
 after accepting the license terms.  Copy it into the oracle directory within this project.
 
+- cd into the cloned repo and `vagrant up`.
+
 - Create your standard users (if there's some consensus, we could
   automate the *standard* standard users.
 
